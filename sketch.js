@@ -5,6 +5,10 @@ var balloon, balloonImg;
 var obstacleTop, obsTop1, obsTop2;
 var obstacleBottom, obsBottom1, obsBottom2, obsBottom3;
 var controlJumpSound;
+var restart;
+var reset;
+var obstacles;
+var gameState = 0;
 
 function preload() {
   bgImg = loadImage("assets/bg.png");
@@ -45,11 +49,21 @@ function setup() {
   balloon.addAnimation("balloon", balloonImg);
   balloon.scale = 0.7;
 
+  reset = createSprite(width - 200, height - 650, 50, 50);
+  reset.addImage(restart);
+  reset.visible = false;
+
+  obstacles = new Group();
+
 }
 
 function draw() {
 
   background("black");
+
+  
+  
+if(gameState == 0){
 
   //faça o balão de ar quente pular
   if (keyDown(RIGHT_ARROW)) {
@@ -65,9 +79,31 @@ function draw() {
       balloon.velocityY = -6
     }, 700);
 
-    // jumpSong.play();
+    jumpSong.play();
+    jumpSong.setVolume(0.3);
+    
+    // balloon.overlap(obstacleBottom);
+    // balloon.overlap(obstacleTop);
     
   }
+
+  if(balloon.isTouching(obstacles)){
+    gameState = 1;
+    balloon.visible = false;
+
+    reset.visible = true;
+
+    obstacles.setVelocityXEach();
+    dieSong.play();
+    dieSong.setVolume(0.2);
+    
+  }
+  spawnObstaclesTop();
+  spawnObstaclesBottom();
+
+ 
+}
+
 
   //adicione gravidade
   balloon.velocityY = balloon.velocityY + 0.5;
@@ -78,8 +114,14 @@ function draw() {
   drawSprites();
 
   //gerar obstáculos superiores
-  spawnObstaclesTop();
-  spawnObstaclesBottom();
+
+ 
+  
+  if(gameState == 1){
+    if(mousePressedOver(reset)){
+      resetGame();
+    }
+  }
 
 
 }
@@ -118,6 +160,8 @@ function spawnObstaclesTop() {
     //  balloon.depth = balloon.depth - 1;
     //obstacleTop.depth=obstacleTop.depth-1;
 
+    obstacles.add(obstacleTop);
+
   }
 }
 
@@ -130,6 +174,7 @@ function Bar() {
     bar.visible = false;
   }
 }
+
 function spawnObstaclesBottom() {
 
   if (frameCount % 400 === 0) {
@@ -157,7 +202,25 @@ function spawnObstaclesBottom() {
 
     
     obstacleBottom.lifetime = 300;
+
+    obstacles.add(obstacleBottom);
   }
+}
+
+
+
+function resetGame(){
+  obstacles.destroyEach();
+ 
+  balloon.position.x = 100;
+  balloon.position.y = 200;
+
+  gameSate = 0;
+
+  balloon.visible = true;
+
+  reset.visible = false;
+
 }
 
 
